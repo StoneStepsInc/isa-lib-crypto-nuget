@@ -97,9 +97,9 @@ jobs:
       run: 7z h -scrcSHA256 ${{ env.ISACRYPTO_FNAME }} | findstr /C:"SHA256 for data" | call devops\check-sha256 "${{ env.ISACRYPTO_SHA256 }}"
 
     - name: Download NASM
-      run: curl --location --output {{ env.NASM_FNAME }} https://www.nasm.us/pub/nasm/releasebuilds/{{ env.NASM_VER }}/win64/{{ env.NASM_FNAME }}
+      run: curl --location --output ${{ env.NASM_FNAME }} https://www.nasm.us/pub/nasm/releasebuilds/${{ env.NASM_VER }}/win64/${{ env.NASM_FNAME }}
     
-    - name: Verify NASM
+    - name: Verify NASM checksum
       run: 7z h -scrcSHA256 ${{ env.NASM_FNAME }} | findstr /C:"SHA256 for data" | call devops\check-sha256 "${{ env.NASM_SHA256 }}"
 
     - name: Extract isa-l_crypto
@@ -119,7 +119,7 @@ jobs:
       working-directory: ${{ env.ISACRYPTO_DNAME }}
       run: |
         call "${{ env.VCVARSALL }}" x64
-        copy /Y ..\{{ env.NASM_DNAME }}\nasm.exe .
+        copy /Y ..\${{ env.NASM_DNAME }}\nasm.exe .
 
         nmake -f Makefile.nmake static CONFIG=DEBUG
 
