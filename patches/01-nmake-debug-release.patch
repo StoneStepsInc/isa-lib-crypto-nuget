@@ -1,0 +1,22 @@
+--- "isa-l_crypto-2.24.0\\Makefile.nmake"	2021-04-16 21:58:11.000000000 -0400
++++ "isa-l_crypto-2.24.0_base\\Makefile.nmake"	2023-04-07 11:18:53.434242600 -0400
+@@ -250,10 +250,18 @@
+ INCLUDES  = -I./ -Isha1_mb/ -Isha256_mb/ -Isha512_mb/ -Imd5_mb/ -Imh_sha1/ -Imh_sha1_murmur3_x64_128/ -Imh_sha256/ -Irolling_hash/ -Ism3_mb/ -Iaes/ -Iinclude/
+ # Modern asm feature level, consider upgrading nasm/yasm before decreasing feature_level
+ FEAT_FLAGS = -DHAVE_AS_KNOWS_AVX512 -DAS_FEATURE_LEVEL=10 -DHAVE_AS_KNOWS_SHANI
++
+ CFLAGS_REL = -O2 -DNDEBUG /Z7 /MD /Gy
+ CFLAGS_DBG = -Od -DDEBUG /Z7 /MDd
++
++!IF "$(CONFIG)" == "DEBUG"
++CFLAGS=$(CFLAGS_DBG)
++!ELSE
++CFLAGS=$(CFLAGS_REL)
++!ENDIF
++
+ LINKFLAGS  = -nologo -incremental:no -debug
+-CFLAGS     = $(CFLAGS_REL) -nologo -D_USE_MATH_DEFINES $(FEAT_FLAGS) $(INCLUDES) $(D)
++CFLAGS     = $(CFLAGS) -nologo -D_USE_MATH_DEFINES $(FEAT_FLAGS) $(INCLUDES) $(D)
+ AFLAGS     = -f win64 $(FEAT_FLAGS) $(INCLUDES) $(D)
+ CC         = cl
+ # or CC    = icl -Qstd=c99

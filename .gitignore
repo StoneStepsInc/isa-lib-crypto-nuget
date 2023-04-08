@@ -1,0 +1,26 @@
+# Visual Studio files
+/.vs/
+
+# downloaded isa-l_crypto and nasm package files
+/isa-l_crypto-*.tar.gz
+/nasm-*.zip
+
+# extracted isa-l_crypto source and nasm binaries
+/isa-l_crypto-*/
+/nasm-*/
+
+# collected isa-l_crypto build artifacts
+/nuget/build/native/include/
+/nuget/build/native/lib/
+/nuget/licenses/
+
+# locally-built Nuget package
+/StoneSteps.IsaLibCrypto.VS2022.Static.*.nupkg
+
+# sample app for testing the Nuget package
+/sample-isa-lib-crypto/.vs/
+/sample-isa-lib-crypto/sample-isa-lib-crypto.vcxproj.user
+/sample-isa-lib-crypto/packages/
+/sample-isa-lib-crypto/packages.config
+/sample-isa-lib-crypto/x64/
+/sample-isa-lib-crypto/cpp.hint

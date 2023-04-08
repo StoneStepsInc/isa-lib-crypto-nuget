@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>StoneSteps.IsaLibCrypto.VS2022.Static</id>
+    <version>2.24.0</version>
+    <authors>Intel Corporation </authors>
+    <owners>Stone Steps (package)</owners>
+    <license type="file">licenses\LICENSE</license>
+    <projectUrl>https://github.com/intel/isa-l_crypto</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Intel(R) Intelligent Storage Acceleration Library Crypto Version</description>
+    <releaseNotes>
+Package Notes:
+
+  * Static libraries for Debug/Release configurations, x64 platform
+  * Built in Visual C++ 2022, against Debug/Release MT/DLL MSVC CRT
+  * See README.md for more information.
+
+See isa-l_crypto release notes for version details:
+
+https://github.com/intel/isa-l_crypto
+    </releaseNotes>
+    <copyright>  Copyright(c) 2011-2017 Intel Corporation All rights reserved.</copyright>
+    <tags>multi-buffer-hash,multi-hash,SHA1,SHA256,SHA512,MD5,SM3,native,library</tags>
+  </metadata>
+  <files>
+   <file src="README.txt" target=""/>
+   <file src="licenses\LICENSE" target="licenses\LICENSE"/>
+   <file src="build\**\*" target="build"/>
+  </files>
+</package>
