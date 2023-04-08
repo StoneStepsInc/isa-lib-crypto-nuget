@@ -34,7 +34,7 @@ _isa-l_crypto_ release indicated in the package version.
 
 This patch updates the existing `Makefile.nmake` file to allow
 building `Debug` and `Release` configurations, so the appropriate
-MSVCRT version of the library is referenced in each configuration.
+MSVC CRT version of the library is referenced in each configuration.
 
 ## Building a Nuget Package
 
