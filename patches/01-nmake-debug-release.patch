@@ -1,5 +1,5 @@
---- "isa-l_crypto-2.24.0\\Makefile.nmake"	2021-04-16 21:58:11.000000000 -0400
-+++ "isa-l_crypto-2.24.0_base\\Makefile.nmake"	2023-04-07 11:18:53.434242600 -0400
+--- isa-l_crypto-2.24.0/Makefile.nmake	2021-04-16 21:58:11.000000000 -0400
++++ isa-l_crypto-2.24.0/Makefile.nmake	2023-04-07 11:18:53.434242600 -0400
 @@ -250,10 +250,18 @@
  INCLUDES  = -I./ -Isha1_mb/ -Isha256_mb/ -Isha512_mb/ -Imd5_mb/ -Imh_sha1/ -Imh_sha1_murmur3_x64_128/ -Imh_sha256/ -Irolling_hash/ -Ism3_mb/ -Iaes/ -Iinclude/
  # Modern asm feature level, consider upgrading nasm/yasm before decreasing feature_level
