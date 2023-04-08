@@ -130,6 +130,7 @@ jobs:
     - name: Clean up x64/Debug
       working-directory: ${{ env.ISACRYPTO_DNAME }}
       run: |
+        call "${{ env.VCVARSALL }}" x64
         nmake -f Makefile.nmake clean
 
     - name: Build x64/Release
