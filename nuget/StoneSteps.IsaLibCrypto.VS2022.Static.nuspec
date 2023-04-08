@@ -6,7 +6,7 @@
     <authors>Intel Corporation</authors>
     <owners>Stone Steps (package)</owners>
     <license type="file">licenses\LICENSE</license>
-    <projectUrl>https://github.com/intel/isa-l_crypto</projectUrl>
+    <projectUrl>https://github.com/StoneStepsInc/isa-lib-crypto-nuget</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Intel(R) Intelligent Storage Acceleration Library Crypto Version</description>
     <releaseNotes>
