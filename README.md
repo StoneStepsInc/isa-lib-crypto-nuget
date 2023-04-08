@@ -1,34 +1,34 @@
-## isa-l_crypto Nuget Package
+## _isa-l_crypto_ Nuget Package
 
-This project builds an isa-l_crypto Nuget package with static
-isa-l_crypto libraries and header files  for the `x64` platform
+This project builds an _isa-l_crypto_ Nuget package with static
+_isa-l_crypto_ libraries and header files  for the `x64` platform
 and `Debug`/`Release` configurations.
 
-Visit isa-l_crypto website for additional information about the
-isa-l_crypto project and library documentation:
+Visit _isa-l_crypto_ website for additional information about the
+_isa-l_crypto_ project and library documentation:
 
 https://github.com/intel/isa-l_crypto
 
 ## Package Configuration
 
-The isa-l_crypto static library appropriate for the platform and
+The _isa-l_crypto_ static library appropriate for the platform and
 configuration selected in a Visual Studio solution is explicitly
 referenced within this package and will appear within the solution
 folder tree after the package is installed. The solution may need
 to be reloaded to make the library file visible. This library may
 be moved into any solution folder after the installation.
 
-Note that the isa-l_crypto library path in this package is valid only
-for build configurations named `Debug` and `Release` and will
+Note that the _isa-l_crypto_ library path in this package is valid
+only for build configurations named `Debug` and `Release` and will
 not work for any other configuration names. Do not install this
 package for projects with configurations other than `Debug` and
 `Release`.
 
-## isa-l_crypto Changes
+## _isa-l_crypto_ Changes
 
-isa-l_crypto source that was used to create this package contains a
+_isa-l_crypto_ source that was used to create this package contains a
 few changes applied in patches described in this section against the
-isa-l_crypto release indicated in the package version.
+_isa-l_crypto_ release indicated in the package version.
 
 ### `01-nmake-debug-release.patch`
 
@@ -38,25 +38,26 @@ MSVCRT version of the library is referenced in each configuration.
 
 ## Building a Nuget Package
 
-This project can build a Nuget package for isa-l_crypto either locally
-or via a GitHub workflow. In each case, following steps are taken.
+This project can build a Nuget package for _isa-l_crypto_ either
+locally or via a GitHub workflow. In each case, following steps
+are taken.
 
-  * isa-l_crypto source archive is downloaded from isa-l_crypto's
+  * _isa-l_crypto_ source archive is downloaded from _isa-l_crypto_'s
     website and its SHA-256 signature is verified.
 
   * The source is patched to build in Visual C++ 2022.
 
-  * NAMS binaries (assembler) are downloaded the NASM website and
-    their SHA-256 signature is verified.
+  * NASM (assembler) binaries package is downloaded the
+    [NASM website][nasm.us] and its SHA-256 signature is verified.
 
-  * VS2022 Community Edition is used to build isa-l_crypto libraries
+  * VS2022 Community Edition is used to build _isa-l_crypto_ libraries
     locally and Enterprise Edition to build libraries on GitHub.
 
   * Build artifacts for all platforms and configurations are
     collected in staging directories under `nuget/build/native`.
 
   * `nuget.exe` is used to package staged files with the first
-    three version components used as a isa-l_crypto version and
+    three version components used as a _isa-l_crypto_ version and
     the last version component used as a package revision. See
     _Package Version_ section for more details.
 
@@ -69,7 +70,7 @@ or via a GitHub workflow. In each case, following steps are taken.
 ### Package Revision
 
 Nuget packages lack package revision and in order to repackage
-the same upstream software version, such as isa-l_crypto v2.24.0,
+the same upstream software version, such as _isa-l_crypto_ v2.24.0,
 the 4th component of the Nuget version is used to track the Nuget
 package revision.
 
@@ -82,30 +83,30 @@ to build a package with the revision `123`.
 
 ### Version Locations
 
-isa-l_crypto version is located in a few places in this repository and
-needs to be changed in all of them for a new version of isa-l_crypto.
+_isa-l_crypto_ version is located in a few places in this repository and
+needs to be changed in all of them for a new version of _isa-l_crypto_.
 
   * nuget/StoneSteps.IsaLibCrypto.VS2022.Static.nuspec (`version`)
   * devops/make-package.bat (`PKG_VER`, `PKG_REV`, `ISACRYPTO_SHA256`)
   * .github/workflows/build-nuget-package.yml (`name`, `PKG_VER`,
     `PKG_REV`, `ISACRYPTO_FNAME`, `ISACRYPTO_DNAME`, `ISACRYPTO_SHA256`)
 
-`ISACRYPTO_SHA256` ia a SHA-256 checksum of the isa-l_crypto package
-file and needs to be updated when a new version of isa-l_crypto is
+`ISACRYPTO_SHA256` ia a SHA-256 checksum of the _isa-l_crypto_ package
+file and needs to be updated when a new version of _isa-l_crypto_ is
 released.
 
-NASM version is not coupled with isa-l_crypto version and needs to
-be updated only when isa-l_crypto changes their minimum version
+NASM version is not coupled with _isa-l_crypto_'s version and needs
+to be updated only when _isa-l_crypto_ changes their minimum version
 requirements.
 
 In the GitHub workflow YAML, `PKG_REV` must be reset to `1` (one)
-every time isa-l_crypto version is changed. The workflow file must
-be renamed with the new version in the name. This is necessary
+every time _isa-l_crypto_ version is changed. The workflow file
+must be renamed with the new version in the name. This is necessary
 because GitHub maintains build numbers per workflow file name.
 
 For local builds package revision is supplied on the command line
 and should be specified as `1` (one) for a new version of
-isa-l_crypto and incremented with every package release for the
+_isa-l_crypto_ and incremented with every package release for the
 same upstream version.
 
 ### GitHub Build Number
@@ -155,4 +156,5 @@ In order to build `sample-isa-lib-crypto.exe`, open Nuget Package
 manager in the solution and install either the locally-built Nuget
 package or the one from [nuget.org][].
 
-[nuget.org]: https://www.nuget.org/packages/StoneSteps.isa-l_crypto.VS2022.Static/
+[nuget.org]: https://www.nuget.org/packages/StoneSteps._isa-l_crypto_.VS2022.Static/
+[nasm.us]: https://www.nasm.us/
