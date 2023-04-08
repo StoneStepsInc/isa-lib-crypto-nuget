@@ -62,8 +62,8 @@ env:
   # or to define them in each step where the source directory is
   # referenced, which is what's done in this pipeline (`ISACRYPTO_DNAME`).
   #
-  ISACRYPTO_FNAME: isa-l_crypto-2.24.0-Source.tar.gz
-  ISACRYPTO_DNAME: isa-l_crypto-2.24.0-Source
+  ISACRYPTO_FNAME: isa-l_crypto-2.24.0.tar.gz
+  ISACRYPTO_DNAME: isa-l_crypto-2.24.0
   ISACRYPTO_SHA256: 1b2d5623f75c94562222a00187c7a9de010266ab7f76e86b553b68bb654d39be
 
   NASM_VER: 2.16.01
