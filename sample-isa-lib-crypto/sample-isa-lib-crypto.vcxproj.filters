@@ -3,7 +3,4 @@
   <ItemGroup>
     <ClCompile Include="sample-isa-lib-crypto.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <Library Include="$(IsaLibCryptoDir)lib\$(Platform)\$(Configuration)\$(IsaLibCryptoName).lib" />
-  </ItemGroup>
 </Project>
