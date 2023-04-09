@@ -15,6 +15,9 @@
 
 using namespace std::literals::string_literals;
 
+// should be the same (former is defined in mh_sha256.h and the latter in sha256_mb.h)
+static_assert(SHA256_DIGEST_WORDS == SHA256_DIGEST_NWORDS);
+
 void print_hash(const char *title, size_t id, uint32_t hash[SHA256_DIGEST_WORDS])
 {
    char hexhash[SHA256_DIGEST_WORDS * sizeof(uint32_t) * 2 + 1];
@@ -259,6 +262,7 @@ void compute_multibuffer_sha256(const std::vector<std::string>& argv)
    // we don't call HASH_LAST in the loop, so jobs will never be completed within the loop
    while(processed != argv.size()) {
       if(mb_ctx_ptr) {
+         // this shouldn't happen for a single job because we exit the loop after the last item
          if(processed == argv.size())
             throw std::runtime_error("Attempting to hash past available data");
 
@@ -279,8 +283,14 @@ void compute_multibuffer_sha256(const std::vector<std::string>& argv)
    // finalize
    //
 
-   if(mb_ctx_ptr)
+   if(mb_ctx_ptr) {
+      // this runs for short input (e.g. ABC), which returns a context after HASH_FIRST
       mb_ctx_ptr = sha256_ctx_mgr_submit(&ctx_mgr, mb_ctx_ptr, nullptr, 0, HASH_LAST);
+
+      if(mb_ctx_ptr && mb_ctx_ptr->status == HASH_CTX_STS_COMPLETE)
+         // this was never observed in testing
+         print_hash("Multi-buffer", 0, mb_ctx_ptr->job.result_digest);
+   }
 
    while((mb_ctx_ptr = sha256_ctx_mgr_flush(&ctx_mgr)) != nullptr) {
       if(mb_ctx_ptr->error != HASH_CTX_ERROR_NONE)
@@ -289,6 +299,7 @@ void compute_multibuffer_sha256(const std::vector<std::string>& argv)
       if(mb_ctx_ptr->status == HASH_CTX_STS_COMPLETE)
          print_hash("Multi-buffer", 0, mb_ctx_ptr->job.result_digest);
       else {
+         // this runs for long input (e.g. 30 A's, one sequence), after HASH_FIRST returns NULL
          mb_ctx_ptr = sha256_ctx_mgr_submit(&ctx_mgr, mb_ctx_ptr, nullptr, 0, HASH_LAST);
 
          if(mb_ctx_ptr && mb_ctx_ptr->status == HASH_CTX_STS_COMPLETE)
