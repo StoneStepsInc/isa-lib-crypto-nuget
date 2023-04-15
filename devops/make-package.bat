@@ -41,7 +41,7 @@ if ERRORLEVEL 1 (
   goto :EOF
 )
 
-tar xzf %ISACRYPTO_FNAME%
+tar -xzf %ISACRYPTO_FNAME%
 
 "%SEVENZIP_EXE%" x %NASM_FNAME%
 
