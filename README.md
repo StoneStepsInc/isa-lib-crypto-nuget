@@ -1,4 +1,4 @@
-## _isa-l_crypto_ Nuget Package
+## isa-l_crypto Nuget Package
 
 This project builds an _isa-l_crypto_ Nuget package with static
 _isa-l_crypto_ libraries and header files  for the `x64` platform
@@ -24,7 +24,7 @@ not work for any other configuration names. Do not install this
 package for projects with configurations other than `Debug` and
 `Release`.
 
-## _isa-l_crypto_ Changes
+## isa-l_crypto Changes
 
 _isa-l_crypto_ source that was used to create this package contains a
 few changes applied in patches described in this section against the
@@ -156,5 +156,5 @@ In order to build `sample-isa-lib-crypto.exe`, open Nuget Package
 manager in the solution and install either the locally-built Nuget
 package or the one from [nuget.org][].
 
-[nuget.org]: https://www.nuget.org/packages/StoneSteps._isa-l_crypto_.VS2022.Static/
+[nuget.org]: https://www.nuget.org/packages/StoneSteps.IsaLibCrypto.VS2022.Static/
 [nasm.us]: https://www.nasm.us/
