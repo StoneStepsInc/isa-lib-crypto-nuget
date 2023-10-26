@@ -287,6 +287,7 @@ void compute_multibuffer_sha256(const std::vector<std::string>& argv)
       // this runs for short input (e.g. ABC), which returns a context after HASH_FIRST
       mb_ctx_ptr = sha256_ctx_mgr_submit(&ctx_mgr, mb_ctx_ptr, nullptr, 0, HASH_LAST);
 
+      // should be no other flags at this point - use ==
       if(mb_ctx_ptr && mb_ctx_ptr->status == HASH_CTX_STS_COMPLETE)
          // this was never observed in testing
          print_hash("Multi-buffer", 0, mb_ctx_ptr->job.result_digest);
@@ -296,6 +297,7 @@ void compute_multibuffer_sha256(const std::vector<std::string>& argv)
       if(mb_ctx_ptr->error != HASH_CTX_ERROR_NONE)
          throw std::runtime_error(std::to_string(mb_ctx_ptr->error) + ": sha256_ctx_mgr_flush failed");
 
+      // should be no other flags at this point - use ==
       if(mb_ctx_ptr->status == HASH_CTX_STS_COMPLETE)
          print_hash("Multi-buffer", 0, mb_ctx_ptr->job.result_digest);
       else {
@@ -328,6 +330,7 @@ int main(int argc, char *argv[])
    argv2.insert(argv2.end(), argv1.begin(), argv1.end());
 
    try {
+      // print both inputs
       printf("\n%d: ", 0);
       for(const std::string& str : argv1)
          fputs(str.c_str(), stdout);
@@ -342,10 +345,12 @@ int main(int argc, char *argv[])
 
       fputc('\n', stdout);
 
+      // compute multibuffer SHA256 of both arguments in parallel
       compute_multibuffer_sha256(argv1, argv2);
 
       fputc('\n', stdout);
 
+      // compute multibuffer SHA256 of just the first argument
       compute_multibuffer_sha256(argv1);
 
       fputc('\n', stdout);
