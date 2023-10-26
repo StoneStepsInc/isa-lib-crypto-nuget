@@ -1,8 +1,7 @@
 ## isa-l_crypto Nuget Package
 
 This project builds an _isa-l_crypto_ Nuget package with static
-_isa-l_crypto_ libraries and header files  for the `x64` platform
-and `Debug`/`Release` configurations.
+_isa-l_crypto_ libraries and header files  for the `x64` platform.
 
 Visit _isa-l_crypto_ website for additional information about the
 _isa-l_crypto_ project and library documentation:
@@ -11,18 +10,29 @@ https://github.com/intel/isa-l_crypto
 
 ## Package Configuration
 
-The _isa-l_crypto_ static library appropriate for the platform and
-configuration selected in a Visual Studio solution is explicitly
-referenced within this package and will appear within the solution
-folder tree after the package is installed. The solution may need
-to be reloaded to make the library file visible. This library may
-be moved into any solution folder after the installation.
+This package contains static _isa-l_crypto_ libraries and header
+files for the x64 platform built with Visual C++ 2022, against
+Debug/Release MT/DLL MSVC CRT.
 
-Note that the _isa-l_crypto_ library path in this package is valid
-only for build configurations named `Debug` and `Release` and will
-not work for any other configuration names. Do not install this
-package for projects with configurations other than `Debug` and
-`Release`.
+The _isa-l_crypto_ static libraries from this package will appear
+within the installation target project after the package is
+installed. The solution may need to be reloaded to make libraries
+visible. Both, debug and release libraries will be listed in the
+project, but only the one appropriate for the currently selected
+configuration will be included in the build. These libraries
+may be moved into solution folders after the installation (e.g.
+`lib/Debug` and `lib/Release`).
+
+Note that the _isa-l_crypto_ library path in this package will
+be selected as `Debug` or `Release` based on whether the selected
+configuration is designated as a development or as a release
+configuration via the standard Visual Studio property called
+`UseDebugLibraries`. Additional configurations copied from the
+standard ones will inherit this property. 
+
+Do not install this package if your projects use debug 
+configurations without `UseDebugLibraries`. Note that CMake-generated
+Visual Studio projects will not emit this property.
 
 ## isa-l_crypto Changes
 
