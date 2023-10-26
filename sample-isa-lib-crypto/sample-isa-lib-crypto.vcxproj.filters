@@ -3,4 +3,15 @@
   <ItemGroup>
     <ClCompile Include="sample-isa-lib-crypto.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Filter Include="lib">
+      <UniqueIdentifier>{7296f1a8-be33-4ed4-b867-7cbde601860f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\Debug">
+      <UniqueIdentifier>{5639c33d-bc84-4bb8-8cef-25d3bae3f41e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib\Release">
+      <UniqueIdentifier>{438f3020-9893-4f17-a2e4-1797766c691e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
 </Project>
