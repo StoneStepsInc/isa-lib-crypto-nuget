@@ -8,7 +8,7 @@
 # name to restart build numbers from `1`. This is necessary because
 # GitHub maintains build numbers per workflow file name.
 #
-name: isa-l_crypto v2.24.0-1
+name: isa-l_crypto v2.24.0-2
 
 #
 # When `publish-package` is set to `yes`, the workflow will build
@@ -52,7 +52,7 @@ on:
 #
 env:
   PKG_VER: 2.24.0
-  PKG_REV: 1
+  PKG_REV: 2
   BUILD_NUMBER: ${{ github.run_number }}
 
   #
@@ -108,12 +108,12 @@ jobs:
 
     - name: Extract NASM
       run: |
-        tar xzf ${{ env.NASM_FNAME }}
+        tar -xzf ${{ env.NASM_FNAME }}
 
     - name: Patch source
       working-directory: ${{ env.ISACRYPTO_DNAME }}
       run: |
-        patch -p1 --unified --input ..\patches\01-nmake-debug-release.patch
+        patch -p 1 --unified --input ..\patches\01-nmake-debug-release.patch
 
     - name: Build x64/Debug
       working-directory: ${{ env.ISACRYPTO_DNAME }}

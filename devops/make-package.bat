@@ -23,7 +23,9 @@ set PATCH=c:\Program Files\Git\usr\bin\patch.exe
 set SEVENZIP_EXE=c:\Program Files\7-Zip\7z.exe
 set VCVARSALL=C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall
 
-curl --location --output %ISACRYPTO_FNAME% https://github.com/intel/isa-l_crypto/archive/refs/tags/v%PKG_VER%.tar.gz
+if NOT EXIST %ISACRYPTO_FNAME% (
+  curl --location --output %ISACRYPTO_FNAME% https://github.com/intel/isa-l_crypto/archive/refs/tags/v%PKG_VER%.tar.gz
+)
                                        
 "%SEVENZIP_EXE%" h -scrcSHA256 %ISACRYPTO_FNAME% | findstr /C:"SHA256 for data" | call devops\check-sha256 "%ISACRYPTO_SHA256%"
 
@@ -32,7 +34,9 @@ if ERRORLEVEL 1 (
   goto :EOF
 )
 
-curl --location --output %NASM_FNAME% https://www.nasm.us/pub/nasm/releasebuilds/%NASM_VER%/win64/%NASM_FNAME%
+if NOT EXIST %NASM_FNAME% (
+  curl --location --output %NASM_FNAME% https://www.nasm.us/pub/nasm/releasebuilds/%NASM_VER%/win64/%NASM_FNAME%
+)
 
 "%SEVENZIP_EXE%" h -scrcSHA256 %NASM_FNAME% | findstr /C:"SHA256 for data" | call devops\check-sha256 "%NASM_SHA256%"
 
@@ -48,7 +52,7 @@ tar -xzf %ISACRYPTO_FNAME%
 cd %ISACRYPTO_DNAME%
 
 rem apply a patch to allow building debug/release configurations
-"%PATCH%" -p1 --unified --input ..\patches\01-nmake-debug-release.patch
+"%PATCH%" -p 1 --unified --input ..\patches\01-nmake-debug-release.patch
 
 call "%VCVARSALL%" x64
 
