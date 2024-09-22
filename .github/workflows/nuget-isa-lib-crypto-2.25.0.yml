@@ -51,8 +51,8 @@ on:
 # adding or removing files, changing any text in README files, etc.
 #
 env:
-  PKG_VER: 2.24.0
-  PKG_REV: 2
+  PKG_VER: 2.25.0
+  PKG_REV: 1
   BUILD_NUMBER: ${{ github.run_number }}
 
   #
@@ -62,17 +62,17 @@ env:
   # or to define them in each step where the source directory is
   # referenced, which is what's done in this pipeline (`ISACRYPTO_DNAME`).
   #
-  ISACRYPTO_FNAME: isa-l_crypto-2.24.0.tar.gz
-  ISACRYPTO_DNAME: isa-l_crypto-2.24.0
-  ISACRYPTO_SHA256: 1b2d5623f75c94562222a00187c7a9de010266ab7f76e86b553b68bb654d39be
+  ISACRYPTO_FNAME: isa-l_crypto-2.25.0.tar.gz
+  ISACRYPTO_DNAME: isa-l_crypto-2.25.0
+  ISACRYPTO_SHA256: afe013e8eca17c9a0e567709c6a967f6b2b497d5317914afc98d5969599ee87e
 
-  NASM_VER: 2.16.01
-  NASM_FNAME: nasm-2.16.01-win64.zip
-  NASM_DNAME: nasm-2.16.01
-  NASM_SHA256: 029eed31faf0d2c5f95783294432cbea6c15bf633430f254bb3c1f195c67ca3a
+  NASM_VER: 2.16.03
+  NASM_FNAME: nasm-2.16.03-win64.zip
+  NASM_DNAME: nasm-2.16.03
+  NASM_SHA256: 3ee4782247bcb874378d02f7eab4e294a84d3d15f3f6ee2de2f47a46aa7226e6
 
   # for VS Community Edition, replace `Enterprise` with `Community` in the path
-  VCVARSALL: 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall'
+  VCVARSALL: '%PROGRAMFILES%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall'
 
   # Nuget Gallery (www.nuget.org) publish URL
   NUGET_PUB_URL: https://api.nuget.org/v3/index.json
@@ -88,7 +88,7 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Download isa-l_crypto
       run: curl --location --output ${{ env.ISACRYPTO_FNAME }} https://github.com/intel/isa-l_crypto/archive/refs/tags/v${{ env.PKG_VER }}.tar.gz
@@ -161,7 +161,7 @@ jobs:
 
     - name: Upload CI Nuget package
       if: ${{ github.event.inputs.publish-package != 'yes' }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: isa-l_crypto CI Nuget package
         path: StoneSteps.IsaLibCrypto.VS2022.Static.${{ env.PKG_VER }}.${{ env.PKG_REV }}-ci.${{ env.BUILD_NUMBER }}.nupkg

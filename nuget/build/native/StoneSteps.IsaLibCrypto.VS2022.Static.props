@@ -1,5 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <!-- add definitions used when building the package -->
+      <PreprocessorDefinitions>NO_COMPAT_ISAL_CRYPTO_API_2_24;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <PropertyGroup Label="UserMacros">
     <!-- isa-l_crypto library name for all build configurations -->
     <IsaLibCryptoName>isa-l_crypto_static</IsaLibCryptoName>

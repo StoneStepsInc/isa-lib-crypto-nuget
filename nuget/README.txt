@@ -25,3 +25,9 @@ Visual Studio projects will not emit this property.
 See README.md in isa-l-crypto-nuget project for more details.
 
 https://github.com/StoneStepsInc/isa-l-crypto-nuget
+
+WARNING: The upstream project introduced breaking changes into
+this version and the source compiled against v2.24.0 will not
+compile against v2.25.0 in this package. See this page for details:
+
+https://github.com/intel/isa-l_crypto/wiki/New-API-introduced-from-v2.25

@@ -1,3 +1,4 @@
+#include <isal_crypto_api.h>
 #include <mh_sha256.h>
 #include <sha256_mb.h>
 #include <multi_buffer.h>
@@ -16,22 +17,22 @@
 using namespace std::literals::string_literals;
 
 // should be the same (former is defined in mh_sha256.h and the latter in sha256_mb.h)
-static_assert(SHA256_DIGEST_WORDS == SHA256_DIGEST_NWORDS);
+static_assert(ISAL_SHA256_DIGEST_WORDS == ISAL_SHA256_DIGEST_NWORDS);
 
-void print_hash(const char *title, size_t id, uint32_t hash[SHA256_DIGEST_WORDS])
+void print_hash(const char *title, size_t id, uint32_t hash[ISAL_SHA256_DIGEST_WORDS])
 {
-   char hexhash[SHA256_DIGEST_WORDS * sizeof(uint32_t) * 2 + 1];
+   char hexhash[ISAL_SHA256_DIGEST_WORDS * sizeof(uint32_t) * 2 + 1];
 
    static const char hex[] = "0123456789abcdef";
 
    // print hash bytes packed as little endian uint32_t elements
-   for(size_t i = 0; i < SHA256_DIGEST_WORDS * sizeof(uint32_t); i++) {
+   for(size_t i = 0; i < ISAL_SHA256_DIGEST_WORDS * sizeof(uint32_t); i++) {
       // reposition little endian uint32_t bytes into a byte sequence (i.e. 0th -> 3rd, 1st -> 2nd, etc)
       hexhash[((i - i % sizeof(uint32_t)) + (sizeof(uint32_t) - i % sizeof(uint32_t) - 1)) * 2] = hex[(*(reinterpret_cast<unsigned char*>(hash)+i) & 0xF0) >> 4];
       hexhash[(((i - i % sizeof(uint32_t)) + (sizeof(uint32_t) - i % sizeof(uint32_t) - 1)) * 2) + 1] = hex[*(reinterpret_cast<unsigned char*>(hash)+i) & 0x0F];
    }
 
-   hexhash[SHA256_DIGEST_WORDS * sizeof(uint32_t) * 2] = '\x0';
+   hexhash[ISAL_SHA256_DIGEST_WORDS * sizeof(uint32_t) * 2] = '\x0';
 
    printf("%16s (%zd): %s\n", title, id, hexhash);
 }
@@ -46,21 +47,21 @@ void print_hash(const char *title, size_t id, uint32_t hash[SHA256_DIGEST_WORDS]
 //
 void compute_multihash_sha256(const std::vector<std::string>& argv)
 {
-   int mh_error;
-   mh_sha256_ctx ctx;
+   int isal_error;
+   isal_mh_sha256_ctx ctx;
 
-   if((mh_error = mh_sha256_init(&ctx)) != MH_SHA256_CTX_ERROR_NONE)
-      throw std::runtime_error(std::to_string(mh_error) + ": mh_sha256_init failed");
+   if((isal_error = isal_mh_sha256_init(&ctx)) != ISAL_MH_SHA256_CTX_ERROR_NONE)
+      throw std::runtime_error(std::to_string(isal_error) + ": isal_mh_sha256_init failed");
 
    for(size_t i = 0; i < argv.size(); i++) {
-      if((mh_error = mh_sha256_update(&ctx, argv[i].c_str(), static_cast<uint32_t>(argv[i].length()))) != MH_SHA256_CTX_ERROR_NONE)
-         throw std::runtime_error(std::to_string(mh_error) + ": mh_sha256_update failed");
+      if((isal_error = isal_mh_sha256_update(&ctx, argv[i].c_str(), static_cast<uint32_t>(argv[i].length()))) != ISAL_MH_SHA256_CTX_ERROR_NONE)
+         throw std::runtime_error(std::to_string(isal_error) + ": isal_mh_sha256_update failed");
    }
 
-   uint32_t hash[SHA256_DIGEST_WORDS];
+   uint32_t hash[ISAL_SHA256_DIGEST_WORDS];
 
-   if((mh_error = mh_sha256_finalize(&ctx, hash)) != MH_SHA256_CTX_ERROR_NONE)
-      throw std::runtime_error(std::to_string(mh_error) + ": mh_sha256_finalize failed");
+   if((isal_error = isal_mh_sha256_finalize(&ctx, hash)) != ISAL_MH_SHA256_CTX_ERROR_NONE)
+      throw std::runtime_error(std::to_string(isal_error) + ": isal_mh_sha256_finalize failed");
 
    print_hash("Multi-hash", 0, hash);
 
@@ -81,13 +82,13 @@ void compute_multibuffer_sha256(const std::vector<std::string>& argv1, const std
 
    std::array<argv_ctx_t, 2> argv_ctxs = {argv_ctx_t{&argv1, 0, 0}, argv_ctx_t{&argv2, 0, 0}};
 
-   std::array<SHA256_HASH_CTX, argv_ctxs.size()> mb_ctx;
-   SHA256_HASH_CTX *mb_ctx_ptr = nullptr;
+   std::array<ISAL_SHA256_HASH_CTX, argv_ctxs.size()> mb_ctx;
+   ISAL_SHA256_HASH_CTX *mb_ctx_ptr = nullptr;
    size_t ctx_in_use = 0;
 
-   SHA256_HASH_CTX_MGR ctx_mgr;
+   ISAL_SHA256_HASH_CTX_MGR ctx_mgr;
 
-   sha256_ctx_mgr_init(&ctx_mgr);
+   isal_sha256_ctx_mgr_init(&ctx_mgr);
 
    //
    // Set up a hashing context for each data sequence we want to hash
@@ -96,8 +97,8 @@ void compute_multibuffer_sha256(const std::vector<std::string>& argv1, const std
    // hash context manager.
    //
    for(size_t i = 0; i < argv_ctxs.size(); i++) {
-      // sets mb_ctx[i].status to HASH_CTX_STS_COMPLETE
-      hash_ctx_init(&mb_ctx[i]);
+      // sets mb_ctx[i].status to ISAL_HASH_CTX_STS_COMPLETE
+      isal_hash_ctx_init(&mb_ctx[i]);
 
       // just store the index for reporting purposes
       argv_ctxs[i].id = i;
@@ -126,8 +127,8 @@ void compute_multibuffer_sha256(const std::vector<std::string>& argv1, const std
             //
             // This will happen if one of the data sequences has one item
             // and the other has more, so the loop keeps going after
-            // HASH_FIRST was submitted for the former, and since there's
-            // no more data, we end it with a zero-sized HASH_LAST (see
+            // ISAL_HASH_FIRST was submitted for the former, and since there's
+            // no more data, we end it with a zero-sized ISAL_HASH_LAST (see
             // the final flush loop for more).
             // 
             // In actual applications, the logic should be consistent when
@@ -136,10 +137,12 @@ void compute_multibuffer_sha256(const std::vector<std::string>& argv1, const std
             // be used for a single data item when starting a job, which
             // would eliminate the need for this code.
             //
-            mb_ctx_ptr = sha256_ctx_mgr_submit(&ctx_mgr, mb_ctx_ptr, nullptr, 0, HASH_LAST);
+            if(isal_sha256_ctx_mgr_submit(&ctx_mgr, mb_ctx_ptr, &mb_ctx_ptr, nullptr, 0, ISAL_HASH_LAST))
+               throw std::runtime_error("Cannot submit a SHA256 hash job");
          }
          else {
-            mb_ctx_ptr = sha256_ctx_mgr_submit(&ctx_mgr, mb_ctx_ptr, (*argv_ctx->argv)[argv_ctx->processed].c_str(), static_cast<uint32_t>((*argv_ctx->argv)[argv_ctx->processed].length()), argv_ctx->processed == argv_ctx->argv->size()-1 ? HASH_LAST : HASH_UPDATE);
+            if(isal_sha256_ctx_mgr_submit(&ctx_mgr, mb_ctx_ptr, &mb_ctx_ptr, (*argv_ctx->argv)[argv_ctx->processed].c_str(), static_cast<uint32_t>((*argv_ctx->argv)[argv_ctx->processed].length()), argv_ctx->processed == argv_ctx->argv->size()-1 ? ISAL_HASH_LAST : ISAL_HASH_UPDATE))
+               throw std::runtime_error("Cannot submit a SHA256 hash job");
             argv_ctx->processed++;
          }
       }
@@ -150,36 +153,37 @@ void compute_multibuffer_sha256(const std::vector<std::string>& argv1, const std
          if(argv_ctx->processed != 0)
             throw std::runtime_error("Cannot start a job for partially-processed data for " + std::to_string(argv_ctx->id));
 
-         mb_ctx_ptr = sha256_ctx_mgr_submit(&ctx_mgr, &mb_ctx[ctx_in_use], (*argv_ctx->argv)[argv_ctx->processed].c_str(), static_cast<uint32_t>((*argv_ctx->argv)[argv_ctx->processed].length()), HASH_FIRST);
+         if(isal_sha256_ctx_mgr_submit(&ctx_mgr, &mb_ctx[ctx_in_use], &mb_ctx_ptr, (*argv_ctx->argv)[argv_ctx->processed].c_str(), static_cast<uint32_t>((*argv_ctx->argv)[argv_ctx->processed].length()), ISAL_HASH_FIRST))
+            throw std::runtime_error("Cannot submit a SHA256 hash job");
          argv_ctx->processed++;
          ctx_in_use++;
       }
       else {
-         if((mb_ctx_ptr = sha256_ctx_mgr_flush(&ctx_mgr)) == nullptr)
-            throw std::runtime_error("sha256_ctx_mgr_flush failed");
+         if(isal_sha256_ctx_mgr_flush(&ctx_mgr, &mb_ctx_ptr))
+            throw std::runtime_error("isal_sha256_ctx_mgr_flush failed");
       }
 
       if(mb_ctx_ptr) {
-         if(mb_ctx_ptr->error != HASH_CTX_ERROR_NONE)
+         if(mb_ctx_ptr->error != ISAL_HASH_CTX_ERROR_NONE)
             throw std::runtime_error(std::to_string(mb_ctx_ptr->error) + ": got a context with an error for " + std::to_string(reinterpret_cast<argv_ctx_t*>(mb_ctx_ptr->user_data)->id));
 
          //
          // We may arrive here either after flushing or, according to the
-         // docs, after HASH_LAST was submitted, which was never observed
+         // docs, after ISAL_HASH_LAST was submitted, which was never observed
          // in testing.
          // 
-         // Note that the HASH_CTX_STS_COMPLETE bit may be combined with
+         // Note that the ISAL_HASH_CTX_STS_COMPLETE bit may be combined with
          // HASH_CTX_STS_PROCESSING for contexts that are still being
          // processed. Bitwise test should never be used to check if the
          // job is complete (see hash_ctx_complete macro in multi_buffer.h).
          //
-         if(mb_ctx_ptr->status == HASH_CTX_STS_COMPLETE) {
+         if(mb_ctx_ptr->status == ISAL_HASH_CTX_STS_COMPLETE) {
             print_hash("Multi-buffer", reinterpret_cast<argv_ctx_t*>(mb_ctx_ptr->user_data)->id, mb_ctx_ptr->job.result_digest);
 
             //
             // For a more complex workflow, we could pass the context along
             // and check whether the job was completed in conditions above,
-            // so it would end up in the block submitting HASH_FIRST, which
+            // so it would end up in the block submitting ISAL_HASH_FIRST, which
             // would submit a new job for a pending data sequence.
             //
             mb_ctx_ptr = nullptr;
@@ -187,22 +191,24 @@ void compute_multibuffer_sha256(const std::vector<std::string>& argv1, const std
       }
    }
 
+   int isal_error = ISAL_CRYPTO_ERR_NONE;
+
    //
    // Finalize active jobs. Given the logic above, we should end up here
-   // with jobs that only have HASH_FIRST submitted or have HASH_LAST
+   // with jobs that only have ISAL_HASH_FIRST submitted or have ISAL_HASH_LAST
    // submitted, but not finalized yet because of other jobs. In actual
    // applications, it will be harder to detect the last data sequence
    // (e.g. a network read may be less than requested without it being
-   // the end of data), some some contexts will have only HASH_UPDATE
-   // submitted and will need HASH_LAST submitted in this loop as well.
+   // the end of data), some some contexts will have only ISAL_HASH_UPDATE
+   // submitted and will need ISAL_HASH_LAST submitted in this loop as well.
    //
-   while((mb_ctx_ptr = sha256_ctx_mgr_flush(&ctx_mgr)) != nullptr) {
+   while((isal_error = isal_sha256_ctx_mgr_flush(&ctx_mgr, &mb_ctx_ptr)) == ISAL_CRYPTO_ERR_NONE && mb_ctx_ptr != nullptr) {
       argv_ctx_t *argv_ctx = reinterpret_cast<argv_ctx_t*>(mb_ctx_ptr->user_data);
 
-      if(mb_ctx_ptr->error != HASH_CTX_ERROR_NONE)
+      if(mb_ctx_ptr->error != ISAL_HASH_CTX_ERROR_NONE)
          throw std::runtime_error(std::to_string(mb_ctx_ptr->error) + ": get flush the context");
 
-      if(mb_ctx_ptr->status == HASH_CTX_STS_COMPLETE)
+      if(mb_ctx_ptr->status == ISAL_HASH_CTX_STS_COMPLETE)
          print_hash("Multi-buffer", reinterpret_cast<argv_ctx_t*>(mb_ctx_ptr->user_data)->id, mb_ctx_ptr->job.result_digest);
       else {
          // we should only end up here for jobs with multiple sub-sequences
@@ -212,18 +218,22 @@ void compute_multibuffer_sha256(const std::vector<std::string>& argv1, const std
          //
          // This will happen if there was just one buffer for this job and
          // other larger jobs didn't force it to submit a zero-length update,
-         // so only HASH_FIRST was submitted. Docs allow calling HASH_LAST
+         // so only ISAL_HASH_FIRST was submitted. Docs allow calling ISAL_HASH_LAST
          // with a zero-sized buffer (nullptr isn't mentioned, though), even
          // though a more optimal approach is to call HASH_ENTIRE instead of
-         // HASH_FIRST when it is known that there is no more data for some
+         // ISAL_HASH_FIRST when it is known that there is no more data for some
          // sequence.
          //
-         mb_ctx_ptr = sha256_ctx_mgr_submit(&ctx_mgr, mb_ctx_ptr, nullptr, 0, HASH_LAST);
+         if(isal_sha256_ctx_mgr_submit(&ctx_mgr, mb_ctx_ptr, &mb_ctx_ptr, nullptr, 0, ISAL_HASH_LAST))
+            throw std::runtime_error("Cannot submit a SHA256 hash job");
 
-         if(mb_ctx_ptr && mb_ctx_ptr->status == HASH_CTX_STS_COMPLETE)
+         if(mb_ctx_ptr && mb_ctx_ptr->status == ISAL_HASH_CTX_STS_COMPLETE)
             print_hash("Multi-buffer", reinterpret_cast<argv_ctx_t*>(mb_ctx_ptr->user_data)->id, mb_ctx_ptr->job.result_digest);
       }
    }
+
+   if(isal_error != ISAL_CRYPTO_ERR_NONE)
+      throw std::runtime_error("Cannot flush context manager");
 }
 
 //
@@ -236,13 +246,13 @@ void compute_multibuffer_sha256(const std::vector<std::string>& argv)
    // init
    //
 
-   SHA256_HASH_CTX mb_ctx, *mb_ctx_ptr = nullptr;
+   ISAL_SHA256_HASH_CTX mb_ctx, *mb_ctx_ptr = nullptr;
 
-   SHA256_HASH_CTX_MGR ctx_mgr;
+   ISAL_SHA256_HASH_CTX_MGR ctx_mgr;
 
-   sha256_ctx_mgr_init(&ctx_mgr);
+   isal_sha256_ctx_mgr_init(&ctx_mgr);
 
-   hash_ctx_init(&mb_ctx);
+   isal_hash_ctx_init(&mb_ctx);
 
    // user data is unintialized in the macro above
    mb_ctx.user_data = nullptr;
@@ -251,7 +261,8 @@ void compute_multibuffer_sha256(const std::vector<std::string>& argv)
    // 1st update
    //
 
-   mb_ctx_ptr = sha256_ctx_mgr_submit(&ctx_mgr, &mb_ctx, argv[0].c_str(), static_cast<uint32_t>(argv[0].length()), HASH_FIRST);
+   if(isal_sha256_ctx_mgr_submit(&ctx_mgr, &mb_ctx, &mb_ctx_ptr, argv[0].c_str(), static_cast<uint32_t>(argv[0].length()), ISAL_HASH_FIRST))
+      throw std::runtime_error("Cannot submit a SHA256 hash job");
 
    size_t processed = 1;
 
@@ -259,23 +270,24 @@ void compute_multibuffer_sha256(const std::vector<std::string>& argv)
    // Nth update
    //
 
-   // we don't call HASH_LAST in the loop, so jobs will never be completed within the loop
+   // we don't call ISAL_HASH_LAST in the loop, so jobs will never be completed within the loop
    while(processed != argv.size()) {
       if(mb_ctx_ptr) {
          // this shouldn't happen for a single job because we exit the loop after the last item
          if(processed == argv.size())
             throw std::runtime_error("Attempting to hash past available data");
 
-         mb_ctx_ptr = sha256_ctx_mgr_submit(&ctx_mgr, mb_ctx_ptr, argv[processed].c_str(), static_cast<uint32_t>(argv[processed].length()), HASH_UPDATE);
+         if(isal_sha256_ctx_mgr_submit(&ctx_mgr, mb_ctx_ptr, &mb_ctx_ptr, argv[processed].c_str(), static_cast<uint32_t>(argv[processed].length()), ISAL_HASH_UPDATE))
+            throw std::runtime_error("Cannot submit a SHA256 hash job");
 
          processed++;
       }
       else {
-         if((mb_ctx_ptr = sha256_ctx_mgr_flush(&ctx_mgr)) == nullptr)
-            throw std::runtime_error("sha256_ctx_mgr_flush failed");
+         if(isal_sha256_ctx_mgr_flush(&ctx_mgr, &mb_ctx_ptr) || mb_ctx_ptr == nullptr)
+            throw std::runtime_error("isal_sha256_ctx_mgr_flush failed");
       }
 
-      if(mb_ctx_ptr && mb_ctx_ptr->error != HASH_CTX_ERROR_NONE)
+      if(mb_ctx_ptr && mb_ctx_ptr->error != ISAL_HASH_CTX_ERROR_NONE)
          throw std::runtime_error(std::to_string(mb_ctx_ptr->error) + ": got a context with an error");
    }
 
@@ -284,30 +296,37 @@ void compute_multibuffer_sha256(const std::vector<std::string>& argv)
    //
 
    if(mb_ctx_ptr) {
-      // this runs for short input (e.g. ABC), which returns a context after HASH_FIRST
-      mb_ctx_ptr = sha256_ctx_mgr_submit(&ctx_mgr, mb_ctx_ptr, nullptr, 0, HASH_LAST);
+      // this runs for short input (e.g. ABC), which returns a context after ISAL_HASH_FIRST
+      if(isal_sha256_ctx_mgr_submit(&ctx_mgr, mb_ctx_ptr, &mb_ctx_ptr, nullptr, 0, ISAL_HASH_LAST))
+         throw std::runtime_error("Cannot submit a SHA256 hash job");
 
       // should be no other flags at this point - use ==
-      if(mb_ctx_ptr && mb_ctx_ptr->status == HASH_CTX_STS_COMPLETE)
+      if(mb_ctx_ptr && mb_ctx_ptr->status == ISAL_HASH_CTX_STS_COMPLETE)
          // this was never observed in testing
          print_hash("Multi-buffer", 0, mb_ctx_ptr->job.result_digest);
    }
 
-   while((mb_ctx_ptr = sha256_ctx_mgr_flush(&ctx_mgr)) != nullptr) {
-      if(mb_ctx_ptr->error != HASH_CTX_ERROR_NONE)
-         throw std::runtime_error(std::to_string(mb_ctx_ptr->error) + ": sha256_ctx_mgr_flush failed");
+   int isal_error = ISAL_CRYPTO_ERR_NONE;
+
+   while((isal_error = isal_sha256_ctx_mgr_flush(&ctx_mgr, &mb_ctx_ptr)) == ISAL_CRYPTO_ERR_NONE && mb_ctx_ptr != nullptr) {
+      if(mb_ctx_ptr->error != ISAL_HASH_CTX_ERROR_NONE)
+         throw std::runtime_error(std::to_string(mb_ctx_ptr->error) + ": isal_sha256_ctx_mgr_flush failed");
 
       // should be no other flags at this point - use ==
-      if(mb_ctx_ptr->status == HASH_CTX_STS_COMPLETE)
+      if(mb_ctx_ptr->status == ISAL_HASH_CTX_STS_COMPLETE)
          print_hash("Multi-buffer", 0, mb_ctx_ptr->job.result_digest);
       else {
-         // this runs for long input (e.g. 30 A's, one sequence), after HASH_FIRST returns NULL
-         mb_ctx_ptr = sha256_ctx_mgr_submit(&ctx_mgr, mb_ctx_ptr, nullptr, 0, HASH_LAST);
+         // this runs for long input (e.g. 30 A's, one sequence), after ISAL_HASH_FIRST returns NULL
+         if(isal_sha256_ctx_mgr_submit(&ctx_mgr, mb_ctx_ptr, &mb_ctx_ptr, nullptr, 0, ISAL_HASH_LAST))
+            throw std::runtime_error("Cannot submit a SHA256 hash job");
 
-         if(mb_ctx_ptr && mb_ctx_ptr->status == HASH_CTX_STS_COMPLETE)
+         if(mb_ctx_ptr && mb_ctx_ptr->status == ISAL_HASH_CTX_STS_COMPLETE)
             print_hash("Multi-buffer", 0, mb_ctx_ptr->job.result_digest);
       }
    }
+
+   if(isal_error != ISAL_CRYPTO_ERR_NONE)
+      throw std::runtime_error("Cannot flush context manager");
 }
 
 int main(int argc, char *argv[])
