@@ -64,7 +64,7 @@ env:
   # referenced, which is what's done in this pipeline (`ISACRYPTO_DNAME`).
   #
   ISACRYPTO_FNAME: isa-l_crypto-2.26.0.tar.gz
-  ISACRYPTO_DNAME: isa-l_crypto-2.26.0
+  ISACRYPTO_DNAME: isa-l_crypto-2.26
   ISACRYPTO_SHA256: 60f7f50637df86f39fe698653a4e3de41ed3e0953f5bff294f19572492c2ee19
 
   NASM_VER: 2.16.03
