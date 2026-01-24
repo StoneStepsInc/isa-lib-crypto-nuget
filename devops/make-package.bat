@@ -26,7 +26,7 @@ set SEVENZIP_EXE=%PROGRAMFILES%\7-Zip\7z.exe
 set VCVARSALL=%PROGRAMFILES%\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall
 
 if NOT EXIST %ISACRYPTO_FNAME% (
-  curl --location --remote-name https://github.com/intel/isa-l_crypto/archive/refs/tags/v%PKG_REL%.tar.gz
+  curl --location --output %ISACRYPTO_FNAME% https://github.com/intel/isa-l_crypto/archive/refs/tags/v%PKG_REL%.tar.gz
 )
 
 "%SEVENZIP_EXE%" h -scrcSHA256 %ISACRYPTO_FNAME% | findstr /C:"SHA256 for data" | call devops\check-sha256 "%ISACRYPTO_SHA256%"
@@ -37,7 +37,7 @@ if ERRORLEVEL 1 (
 )
 
 if NOT EXIST %NASM_FNAME% (
-  curl --location --remote-name https://www.nasm.us/pub/nasm/releasebuilds/%NASM_VER%/win64/%NASM_FNAME%
+  curl --location --output %NASM_FNAME% https://www.nasm.us/pub/nasm/releasebuilds/%NASM_VER%/win64/%NASM_FNAME%
 )
 
 "%SEVENZIP_EXE%" h -scrcSHA256 %NASM_FNAME% | findstr /C:"SHA256 for data" | call devops\check-sha256 "%NASM_SHA256%"
