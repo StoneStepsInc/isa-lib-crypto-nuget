@@ -112,6 +112,7 @@ jobs:
         tar -xzf ${{ env.NASM_FNAME }}
 
     - name: Generate the build system
+      working-directory: ${{ env.ISACRYPTO_DNAME }}
       run: |
         call "${{ env.VCVARSALL }}" x64
 
