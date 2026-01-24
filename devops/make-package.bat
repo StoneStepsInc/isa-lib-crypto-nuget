@@ -7,12 +7,14 @@ if "%~1" == "" (
   goto :EOF
 )
 
-set PKG_VER=2.25.0
+set PKG_REL=2.26
+
+set PKG_VER=%PKG_REL%.0
 set PKG_REV=%~1
 
-set ISACRYPTO_FNAME=isa-l_crypto-%PKG_VER%.tar.gz
-set ISACRYPTO_DNAME=isa-l_crypto-%PKG_VER%
-set ISACRYPTO_SHA256=afe013e8eca17c9a0e567709c6a967f6b2b497d5317914afc98d5969599ee87e
+set ISACRYPTO_FNAME=isa-l_crypto-%PKG_REL%.tar.gz
+set ISACRYPTO_DNAME=isa-l_crypto-%PKG_REL%
+set ISACRYPTO_SHA256=60f7f50637df86f39fe698653a4e3de41ed3e0953f5bff294f19572492c2ee19
 
 set NASM_VER=2.16.03
 set NASM_FNAME=nasm-%NASM_VER%-win64.zip
@@ -24,9 +26,9 @@ set SEVENZIP_EXE=%PROGRAMFILES%\7-Zip\7z.exe
 set VCVARSALL=%PROGRAMFILES%\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall
 
 if NOT EXIST %ISACRYPTO_FNAME% (
-  curl --location --output %ISACRYPTO_FNAME% https://github.com/intel/isa-l_crypto/archive/refs/tags/v%PKG_VER%.tar.gz
+  curl --location --remote-name https://github.com/intel/isa-l_crypto/archive/refs/tags/v%PKG_REL%.tar.gz
 )
-                                       
+
 "%SEVENZIP_EXE%" h -scrcSHA256 %ISACRYPTO_FNAME% | findstr /C:"SHA256 for data" | call devops\check-sha256 "%ISACRYPTO_SHA256%"
 
 if ERRORLEVEL 1 (
@@ -35,7 +37,7 @@ if ERRORLEVEL 1 (
 )
 
 if NOT EXIST %NASM_FNAME% (
-  curl --location --output %NASM_FNAME% https://www.nasm.us/pub/nasm/releasebuilds/%NASM_VER%/win64/%NASM_FNAME%
+  curl --location --remote-name https://www.nasm.us/pub/nasm/releasebuilds/%NASM_VER%/win64/%NASM_FNAME%
 )
 
 "%SEVENZIP_EXE%" h -scrcSHA256 %NASM_FNAME% | findstr /C:"SHA256 for data" | call devops\check-sha256 "%NASM_SHA256%"
@@ -51,53 +53,50 @@ tar -xzf %ISACRYPTO_FNAME%
 
 cd %ISACRYPTO_DNAME%
 
-rem apply a patch to allow building debug/release configurations
-"%PATCH%" -p 1 --unified --input ..\patches\01-nmake-debug-release.patch
-
-if ERRORLEVEL 1 (
-  echo Cannot apply patch 01-nmake-debug-release.patch
-  goto :EOF
-)
-
 call "%VCVARSALL%" x64
 
-rem nmake will find nasm.exe in the current directory
-copy /Y ..\%NASM_DNAME%\nasm.exe .
+cmake -S . -B _build -A x64 ^
+    -DCMAKE_ASM_NASM_COMPILER=%CD%\..\%NASM_DNAME%\nasm.exe ^
+    -DBUILD_TESTS=OFF ^
+    -DBUILD_PERF=OFF  ^
+    -DBUILD_SHARED_LIBS=OFF
 
 rem
-rem Build x64 Debug
+rem x64 Debug
 rem 
-nmake -f Makefile.nmake static CONFIG=DEBUG
+cmake --build _build --config Debug
 
+rem `cmake --install` does not copy PDB files, so skip install and copy files from the build directories
 mkdir ..\nuget\build\native\lib\x64\Debug
-copy /Y isa-l_crypto_static.lib ..\nuget\build\native\lib\x64\Debug\
+copy /Y _build\Debug\isal_crypto.pdb ..\nuget\build\native\lib\x64\Debug\
+copy /Y _build\Debug\isal_crypto.lib ..\nuget\build\native\lib\x64\Debug\
+
+cmake --build _build --config Debug --target clean
 
 rem
-rem Clean up
-rem
-
-nmake -f Makefile.nmake clean
-
-rem nmake clean deletes all executables, including nasm.exe
-copy /Y ..\%NASM_DNAME%\nasm.exe .
-
-rem
-rem Build x64 Release
+rem x64 Release
 rem 
 
-nmake -f Makefile.nmake static CONFIG=RELEASE
+cmake --build _build --config Release
 
+cmake --install _build --config Release --prefix _install\Release
+
+cmake --build _build --config Release --target clean
+
+rem CMake does not generate PDB files for release builds, which is unfortunate
 mkdir ..\nuget\build\native\lib\x64\Release
-copy /Y isa-l_crypto_static.lib ..\nuget\build\native\lib\x64\Release\
+copy /Y _install\Release\lib\isal_crypto.lib ..\nuget\build\native\lib\x64\Release\
+
+rem copy all header files and keep the directory structure
+mkdir ..\nuget\build\native\include\isa-l_crypto
+copy /Y _install\Release\include\* ..\nuget\build\native\include\
+copy /Y _install\Release\include\isa-l_crypto\* ..\nuget\build\native\include\isa-l_crypto
 
 rem
-rem Headers and licenses
+rem licenses
 rem
 mkdir ..\nuget\licenses
 copy LICENSE ..\nuget\licenses\
-
-mkdir ..\nuget\build\native\include\
-copy /Y include\* ..\nuget\build\native\include\
 
 cd ..
 

@@ -1,7 +1,7 @@
-#include <isal_crypto_api.h>
-#include <mh_sha256.h>
-#include <sha256_mb.h>
-#include <multi_buffer.h>
+#include <isa-l_crypto/isal_crypto_api.h>
+#include <isa-l_crypto/mh_sha256.h>
+#include <isa-l_crypto/sha256_mb.h>
+#include <isa-l_crypto/multi_buffer.h>
 
 #include <cinttypes>
 #include <cstdint>
@@ -155,6 +155,7 @@ void compute_multibuffer_sha256(const std::vector<std::string>& argv1, const std
 
          if(isal_sha256_ctx_mgr_submit(&ctx_mgr, &mb_ctx[ctx_in_use], &mb_ctx_ptr, (*argv_ctx->argv)[argv_ctx->processed].c_str(), static_cast<uint32_t>((*argv_ctx->argv)[argv_ctx->processed].length()), ISAL_HASH_FIRST))
             throw std::runtime_error("Cannot submit a SHA256 hash job");
+
          argv_ctx->processed++;
          ctx_in_use++;
       }
@@ -206,7 +207,7 @@ void compute_multibuffer_sha256(const std::vector<std::string>& argv1, const std
       argv_ctx_t *argv_ctx = reinterpret_cast<argv_ctx_t*>(mb_ctx_ptr->user_data);
 
       if(mb_ctx_ptr->error != ISAL_HASH_CTX_ERROR_NONE)
-         throw std::runtime_error(std::to_string(mb_ctx_ptr->error) + ": get flush the context");
+         throw std::runtime_error(std::to_string(mb_ctx_ptr->error) + ": flush the context");
 
       if(mb_ctx_ptr->status == ISAL_HASH_CTX_STS_COMPLETE)
          print_hash("Multi-buffer", reinterpret_cast<argv_ctx_t*>(mb_ctx_ptr->user_data)->id, mb_ctx_ptr->job.result_digest);
@@ -254,7 +255,7 @@ void compute_multibuffer_sha256(const std::vector<std::string>& argv)
 
    isal_hash_ctx_init(&mb_ctx);
 
-   // user data is unintialized in the macro above
+   // user data is uninitialized in the macro above
    mb_ctx.user_data = nullptr;
 
    //
@@ -338,14 +339,16 @@ int main(int argc, char *argv[])
 
    std::vector<std::string> argv1, argv2;
 
+   // collect all text fragments in 2 vectors, which will be processed in simultaneously
    for(size_t i = 1; i < argc; i++) {
       argv1.push_back(argv[i]);
       argv2.push_back(argv[i]);
    }
 
+   // reverse the second vector, so the bit patterns are different for these vectors
    std::reverse(argv2.begin(), argv2.end());
 
-   // make the second vector longer, to make the hashing loop dynamic more realistic
+   // make the second vector longer, to make the hashing loop more realistic
    argv2.insert(argv2.end(), argv1.begin(), argv1.end());
 
    try {
@@ -364,12 +367,12 @@ int main(int argc, char *argv[])
 
       fputc('\n', stdout);
 
-      // compute multibuffer SHA256 of both arguments in parallel
+      // compute multi-buffer SHA256 of both arguments in parallel
       compute_multibuffer_sha256(argv1, argv2);
 
       fputc('\n', stdout);
 
-      // compute multibuffer SHA256 of just the first argument
+      // compute multi-buffer SHA256 of just the first argument
       compute_multibuffer_sha256(argv1);
 
       fputc('\n', stdout);

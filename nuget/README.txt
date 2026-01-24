@@ -1,6 +1,13 @@
 This package contains static isa-l_crypto libraries and header
 files for the x64 platform built with Visual C++ 2022, against
-Debug/Release MT/DLL MSVC CRT.
+Debug/Release MT/DLL MSVC CRT, using the following build options.
+
+--   Shared libraries:     OFF
+--   Build tests:          OFF
+--   Build perf apps:      OFF
+--   Safe data:            ON
+--   Safe param:           ON
+--   FIPS mode:            OFF
 
 The isa-l_crypto static libraries from this package will appear
 within the installation target project after the package is
@@ -26,8 +33,24 @@ See README.md in isa-l-crypto-nuget project for more details.
 
 https://github.com/StoneStepsInc/isa-l-crypto-nuget
 
-WARNING: The upstream project introduced breaking changes into
-this version and the source compiled against v2.24.0 will not
-compile against v2.25.0 in this package. See this page for details:
+WARNING: Due to changes in the build system in the upstream
+project, the names of the static libraries and the locations of
+the header files have changed. The new library file names are
+isal_crypto.lib for all configurations. If upgrading from
+v2.25.0, the original files named isa-l_crypto_static.lib
+will be removed from Visual Studio projects on upgrade, but
+you will need to place the new files into the solution folders
+manually. Header files have been moved into the isa-l_crypto
+directory. You can either add this directory to the #include
+directives or use the include-all header provided by isa-l_crypto,
+as shown below (use only one of these approaches).
+
+#include <isa-l_crypto/sha256_mb.h>
+#include <isa-l_crypto.h>
+
+WARNING: The upstream project introduced breaking changes in
+v2.25.0 and the source compiled against v2.24.0 will not compile
+against v2.25.0 and newer. See this page for details:
 
 https://github.com/intel/isa-l_crypto/wiki/New-API-introduced-from-v2.25
+

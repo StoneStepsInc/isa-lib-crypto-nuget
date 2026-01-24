@@ -8,7 +8,7 @@
 # name to restart build numbers from `1`. This is necessary because
 # GitHub maintains build numbers per workflow file name.
 #
-name: isa-l_crypto v2.25.0-1
+name: isa-l_crypto v2.26.0-1
 
 #
 # When `publish-package` is set to `yes`, the workflow will build
@@ -51,7 +51,8 @@ on:
 # adding or removing files, changing any text in README files, etc.
 #
 env:
-  PKG_VER: 2.25.0
+  PKG_REL: 2.26  
+  PKG_VER: 2.26.0
   PKG_REV: 1
   BUILD_NUMBER: ${{ github.run_number }}
 
@@ -62,9 +63,9 @@ env:
   # or to define them in each step where the source directory is
   # referenced, which is what's done in this pipeline (`ISACRYPTO_DNAME`).
   #
-  ISACRYPTO_FNAME: isa-l_crypto-2.25.0.tar.gz
-  ISACRYPTO_DNAME: isa-l_crypto-2.25.0
-  ISACRYPTO_SHA256: afe013e8eca17c9a0e567709c6a967f6b2b497d5317914afc98d5969599ee87e
+  ISACRYPTO_FNAME: isa-l_crypto-2.26.0.tar.gz
+  ISACRYPTO_DNAME: isa-l_crypto-2.26.0
+  ISACRYPTO_SHA256: 60f7f50637df86f39fe698653a4e3de41ed3e0953f5bff294f19572492c2ee19
 
   NASM_VER: 2.16.03
   NASM_FNAME: nasm-2.16.03-win64.zip
@@ -91,13 +92,13 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Download isa-l_crypto
-      run: curl --location --output ${{ env.ISACRYPTO_FNAME }} https://github.com/intel/isa-l_crypto/archive/refs/tags/v${{ env.PKG_VER }}.tar.gz
+      run: curl --location --remote-name https://github.com/intel/isa-l_crypto/archive/refs/tags/v${{ env.PKG_REL }}.tar.gz
     
     - name: Verify isa-l_crypto checksum
       run: 7z h -scrcSHA256 ${{ env.ISACRYPTO_FNAME }} | findstr /C:"SHA256 for data" | call devops\check-sha256 "${{ env.ISACRYPTO_SHA256 }}"
 
     - name: Download NASM
-      run: curl --location --output ${{ env.NASM_FNAME }} https://www.nasm.us/pub/nasm/releasebuilds/${{ env.NASM_VER }}/win64/${{ env.NASM_FNAME }}
+      run: curl --location --remote-name https://www.nasm.us/pub/nasm/releasebuilds/${{ env.NASM_VER }}/win64/${{ env.NASM_FNAME }}
     
     - name: Verify NASM checksum
       run: 7z h -scrcSHA256 ${{ env.NASM_FNAME }} | findstr /C:"SHA256 for data" | call devops\check-sha256 "${{ env.NASM_SHA256 }}"
@@ -110,48 +111,57 @@ jobs:
       run: |
         tar -xzf ${{ env.NASM_FNAME }}
 
-    - name: Patch source
-      working-directory: ${{ env.ISACRYPTO_DNAME }}
+    - name: Generate the build system
       run: |
-        patch -p 1 --unified --input ..\patches\01-nmake-debug-release.patch
+        call "${{ env.VCVARSALL }}" x64
+
+        cmake -S . -B _build -A x64 ^
+            -DCMAKE_ASM_NASM_COMPILER=${{ github.workspace }}\${{ env.NASM_DNAME }}\nasm.exe ^
+            -DBUILD_TESTS=OFF ^
+            -DBUILD_PERF=OFF  ^
+            -DBUILD_SHARED_LIBS=OFF
 
     - name: Build x64/Debug
       working-directory: ${{ env.ISACRYPTO_DNAME }}
       run: |
-        call "${{ env.VCVARSALL }}" x64
-        copy /Y ..\${{ env.NASM_DNAME }}\nasm.exe .
-
-        nmake -f Makefile.nmake static CONFIG=DEBUG
+        cmake --build _build --config Debug
 
         mkdir ..\nuget\build\native\lib\x64\Debug
-        copy /Y isa-l_crypto_static.lib ..\nuget\build\native\lib\x64\Debug\
+        copy /Y _build\Debug\isal_crypto.pdb ..\nuget\build\native\lib\x64\Debug\
+        copy /Y _build\Debug\isal_crypto.lib ..\nuget\build\native\lib\x64\Debug\
 
-      # clean deletes nasm.exe as well
-    - name: Clean up x64/Debug
+    - name: Clean x64/Debug
       working-directory: ${{ env.ISACRYPTO_DNAME }}
       run: |
         call "${{ env.VCVARSALL }}" x64
-        nmake -f Makefile.nmake clean
+        cmake --build _build --config Debug --target clean
 
     - name: Build x64/Release
       working-directory: ${{ env.ISACRYPTO_DNAME }}
       run: |
         call "${{ env.VCVARSALL }}" x64
-        copy /Y ..\%NASM_DNAME%\nasm.exe .
 
-        nmake -f Makefile.nmake static CONFIG=RELEASE
+        cmake --build _build --config Release
+        cmake --install _build --config Release --prefix _install\Release
 
         mkdir ..\nuget\build\native\lib\x64\Release
-        copy /Y isa-l_crypto_static.lib ..\nuget\build\native\lib\x64\Release\
+        copy /Y _install\Release\lib\isal_crypto.lib ..\nuget\build\native\lib\x64\Release\
 
-    - name: Collect headers and licenses
+        mkdir ..\nuget\build\native\include\isa-l_crypto
+        copy /Y _install\Release\include\* ..\nuget\build\native\include\
+        copy /Y _install\Release\include\isa-l_crypto\* ..\nuget\build\native\include\isa-l_crypto
+
+    - name: Clean x64/Release
+      working-directory: ${{ env.ISACRYPTO_DNAME }}
+      run: |
+        call "${{ env.VCVARSALL }}" x64
+        cmake --build _build --config Release --target clean
+
+    - name: Collect licenses
       working-directory: ${{ env.ISACRYPTO_DNAME }}
       run: |
         mkdir ..\nuget\licenses
         copy LICENSE ..\nuget\licenses\
-
-        mkdir ..\nuget\build\native\include\
-        copy /Y include\* ..\nuget\build\native\include\
 
       # this is an unconventional use of the pre-release version - see README.md
     - name: Make CI Nuget package

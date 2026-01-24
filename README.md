@@ -12,7 +12,14 @@ https://github.com/intel/isa-l_crypto
 
 This package contains static _isa-l_crypto_ libraries and header
 files for the x64 platform built with Visual C++ 2022, against
-Debug/Release MT/DLL MSVC CRT.
+Debug/Release MT/DLL MSVC CRT, using the following build options.
+
+    --   Shared libraries:     OFF
+    --   Build tests:          OFF
+    --   Build perf apps:      OFF
+    --   Safe data:            ON
+    --   Safe param:           ON
+    --   FIPS mode:            OFF
 
 The _isa-l_crypto_ static libraries from this package will appear
 within the installation target project after the package is
@@ -34,22 +41,10 @@ Do not install this package if your projects use debug
 configurations without `UseDebugLibraries`. Note that CMake-generated
 Visual Studio projects will not emit this property.
 
-## isa-l_crypto Changes
-
-_isa-l_crypto_ source that was used to create this package contains a
-few changes applied in patches described in this section against the
-_isa-l_crypto_ release indicated in the package version.
-
-### `01-nmake-debug-release.patch`
-
-This patch updates the existing `Makefile.nmake` file to allow
-building `Debug` and `Release` configurations, so the appropriate
-MSVC CRT version of the library is referenced in each configuration.
-
 ## Building a Nuget Package
 
 This project can build a Nuget package for _isa-l_crypto_ either
-locally or via a GitHub workflow. In each case, following steps
+locally or via a GitHub workflow. In each case, the following steps
 are taken.
 
   * _isa-l_crypto_ source archive is downloaded from _isa-l_crypto_'s
@@ -57,7 +52,7 @@ are taken.
 
   * The source is patched to build in Visual C++ 2022.
 
-  * NASM (assembler) binaries package is downloaded the
+  * NASM (assembler) binaries package is downloaded from the
     [NASM website][nasm.us] and its SHA-256 signature is verified.
 
   * VS2022 Community Edition is used to build _isa-l_crypto_ libraries
@@ -67,7 +62,7 @@ are taken.
     collected in staging directories under `nuget/build/native`.
 
   * `nuget.exe` is used to package staged files with the first
-    three version components used as a _isa-l_crypto_ version and
+    three version components used as an _isa-l_crypto_ version and
     the last version component used as a package revision. See
     _Package Version_ section for more details.
 
@@ -93,15 +88,17 @@ to build a package with the revision `123`.
 
 ### Version Locations
 
-_isa-l_crypto_ version is located in a few places in this repository and
-needs to be changed in all of them for a new version of _isa-l_crypto_.
+_isa-l_crypto_ version is located in a few places in this repository
+and needs to be changed in all of them for a new version of _isa-l_crypto_.
 
   * nuget/StoneSteps.IsaLibCrypto.VS2022.Static.nuspec (`version`)
-  * devops/make-package.bat (`PKG_VER`, `PKG_REV`, `ISACRYPTO_SHA256`)
-  * .github/workflows/build-nuget-package.yml (`name`, `PKG_VER`,
-    `PKG_REV`, `ISACRYPTO_FNAME`, `ISACRYPTO_DNAME`, `ISACRYPTO_SHA256`)
+  * _devops/make-package.bat_ (`PKG_REL`, `PKG_VER`, `PKG_REV`,
+    `ISACRYPTO_SHA256`)
+  * _.github/workflows/nuget-isa-lib-crypto-\{version\}.yml_ (`name`,
+    `PKG_REL`, `PKG_VER`, `PKG_REV`, `ISACRYPTO_FNAME`, `ISACRYPTO_DNAME`,
+    `ISACRYPTO_SHA256`)
 
-`ISACRYPTO_SHA256` ia a SHA-256 checksum of the _isa-l_crypto_ package
+`ISACRYPTO_SHA256` is a SHA-256 checksum of the _isa-l_crypto_ package
 file and needs to be updated when a new version of _isa-l_crypto_ is
 released.
 
