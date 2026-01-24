@@ -92,7 +92,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Download isa-l_crypto
-      run: curl --output ${{ env.ISACRYPTO_FNAME }} https://github.com/intel/isa-l_crypto/archive/refs/tags/v${{ env.PKG_REL }}.tar.gz
+      run: curl --location --output ${{ env.ISACRYPTO_FNAME }} https://github.com/intel/isa-l_crypto/archive/refs/tags/v${{ env.PKG_REL }}.tar.gz
     
     - name: Verify isa-l_crypto checksum
       run: 7z h -scrcSHA256 ${{ env.ISACRYPTO_FNAME }} | findstr /C:"SHA256 for data" | call devops\check-sha256 "${{ env.ISACRYPTO_SHA256 }}"
