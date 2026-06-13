@@ -89,7 +89,7 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Download isa-l_crypto
       run: curl --location --output ${{ env.ISACRYPTO_FNAME }} https://github.com/intel/isa-l_crypto/archive/refs/tags/v${{ env.PKG_REL }}.tar.gz
@@ -173,7 +173,7 @@ jobs:
 
     - name: Upload CI Nuget package
       if: ${{ github.event.inputs.publish-package != 'yes' }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: isa-l_crypto CI Nuget package
         path: StoneSteps.IsaLibCrypto.VS2022.Static.${{ env.PKG_VER }}.${{ env.PKG_REV }}-ci.${{ env.BUILD_NUMBER }}.nupkg
