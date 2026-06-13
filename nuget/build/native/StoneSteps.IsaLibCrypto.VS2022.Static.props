@@ -8,7 +8,7 @@
   </ItemDefinitionGroup>
   <PropertyGroup Label="UserMacros">
     <!-- isa-l_crypto library name for all build configurations -->
-    <IsaLibCryptoName>isal_crypto</IsaLibCryptoName>
+    <IsaLibCryptoName>isa-l_crypto</IsaLibCryptoName>
     <!-- Define a macro that can be used in project files to reference package directories -->
     <IsaLibCryptoDir>$(MSBuildThisFileDirectory)</IsaLibCryptoDir>
   </PropertyGroup>

@@ -7,19 +7,20 @@ if "%~1" == "" (
   goto :EOF
 )
 
-set PKG_REL=2.26
+set PKG_REL=2.26.1
 
-set PKG_VER=%PKG_REL%.0
+rem add `.0` for missing dot-zero releases, like 2.26
+set PKG_VER=%PKG_REL%
 set PKG_REV=%~1
 
 set ISACRYPTO_FNAME=isa-l_crypto-%PKG_REL%.tar.gz
 set ISACRYPTO_DNAME=isa-l_crypto-%PKG_REL%
-set ISACRYPTO_SHA256=60f7f50637df86f39fe698653a4e3de41ed3e0953f5bff294f19572492c2ee19
+set ISACRYPTO_SHA256=dd83e3da8e589d15ff475ac727b38c8cba48d2e82465fa58de2b5d9fefcd682b
 
-set NASM_VER=2.16.03
+set NASM_VER=3.01
 set NASM_FNAME=nasm-%NASM_VER%-win64.zip
 set NASM_DNAME=nasm-%NASM_VER%
-set NASM_SHA256=3ee4782247bcb874378d02f7eab4e294a84d3d15f3f6ee2de2f47a46aa7226e6
+set NASM_SHA256=e0ba5157007abc7b1a65118a96657a961ddf55f7e3f632ee035366dfce039ca4
 
 set PATCH=%PROGRAMFILES%\Git\usr\bin\patch.exe
 set SEVENZIP_EXE=%PROGRAMFILES%\7-Zip\7z.exe
@@ -55,7 +56,7 @@ cd %ISACRYPTO_DNAME%
 
 call "%VCVARSALL%" x64
 
-cmake -S . -B _build -A x64 ^
+cmake -S . -B _build -A x64 -G "Visual Studio 17 2022" ^
     -DCMAKE_ASM_NASM_COMPILER=%CD%\..\%NASM_DNAME%\nasm.exe ^
     -DBUILD_TESTS=OFF ^
     -DBUILD_PERF=OFF  ^
@@ -63,13 +64,14 @@ cmake -S . -B _build -A x64 ^
 
 rem
 rem x64 Debug
-rem 
+rem
+
 cmake --build _build --config Debug
 
 rem `cmake --install` does not copy PDB files, so skip install and copy files from the build directories
 mkdir ..\nuget\build\native\lib\x64\Debug
-copy /Y _build\Debug\isal_crypto.pdb ..\nuget\build\native\lib\x64\Debug\
-copy /Y _build\Debug\isal_crypto.lib ..\nuget\build\native\lib\x64\Debug\
+copy /Y _build\Debug\isa-l_crypto.pdb ..\nuget\build\native\lib\x64\Debug\
+copy /Y _build\Debug\isa-l_crypto.lib ..\nuget\build\native\lib\x64\Debug\
 
 cmake --build _build --config Debug --target clean
 
@@ -77,15 +79,15 @@ rem
 rem x64 Release
 rem 
 
-cmake --build _build --config Release
+cmake --build _build --config RelWithDebInfo
 
-cmake --install _build --config Release --prefix _install\Release
+cmake --install _build --config RelWithDebInfo --prefix _install\Release
 
-cmake --build _build --config Release --target clean
-
-rem CMake does not generate PDB files for release builds, which is unfortunate
 mkdir ..\nuget\build\native\lib\x64\Release
-copy /Y _install\Release\lib\isal_crypto.lib ..\nuget\build\native\lib\x64\Release\
+copy /Y _build\RelWithDebInfo\isa-l_crypto.pdb ..\nuget\build\native\lib\x64\Release\
+copy /Y _build\RelWithDebInfo\isa-l_crypto.lib ..\nuget\build\native\lib\x64\Release\
+
+cmake --build _build --config RelWithDebInfo --target clean
 
 rem copy all header files and keep the directory structure
 mkdir ..\nuget\build\native\include\isa-l_crypto
