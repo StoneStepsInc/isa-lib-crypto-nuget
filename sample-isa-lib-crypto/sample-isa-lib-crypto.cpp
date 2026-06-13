@@ -200,7 +200,7 @@ void compute_multibuffer_sha256(const std::vector<std::string>& argv1, const std
    // submitted, but not finalized yet because of other jobs. In actual
    // applications, it will be harder to detect the last data sequence
    // (e.g. a network read may be less than requested without it being
-   // the end of data), some some contexts will have only ISAL_HASH_UPDATE
+   // the end of data), so some contexts will have only ISAL_HASH_UPDATE
    // submitted and will need ISAL_HASH_LAST submitted in this loop as well.
    //
    while((isal_error = isal_sha256_ctx_mgr_flush(&ctx_mgr, &mb_ctx_ptr)) == ISAL_CRYPTO_ERR_NONE && mb_ctx_ptr != nullptr) {
